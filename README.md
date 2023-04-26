@@ -47,7 +47,7 @@ docker run -p3000:3000 theajax/golem
 - 📄 External knowledge (documents, websites, etc.) support
 - 🤖 Additional AI language models support
 - 🌍 Multi-language support
-- 🔌 Plugins support
+- 🔌 Plugins support 
 
 
 
