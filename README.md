@@ -3,11 +3,13 @@
 <img src="./public/image/logo-light-lettered.svg#gh-light-mode-only" width="300" />
 <img src="./public/image/logo-dark-lettered.svg#gh-dark-mode-only" width="300" />
 
-> Golem is an open-source conversational UI and alternative to ChatGPT
+<h3><sup>Golem is an open-source conversational UI and alternative to ChatGPT</sup><h3>
+
+
+<img src="https://user-images.githubusercontent.com/8951736/236704737-3591e45f-11cc-410a-8cf7-e10288233c8d.png" width=840>
 
 </div>
 
-![](./docs/screenshot.png)
 
 
 ## 🚀 Key Features:
@@ -24,10 +26,11 @@
 - 💠 Cross device synchronisation
 - 🍻 Share chat history
 
-[
-![](https://raw.githubusercontent.com/deta/community-content/main/Install-Button/light.svg#gh-light-mode-only)
-![](https://raw.githubusercontent.com/deta/community-content/main/Install-Button/dark.svg#gh-dark-mode-only)
-](https://deta.space/discovery/@henrycunh/golem)
+<div align="center">
+<a href="https://deta.space/discovery/@henrycunh/golem" _target="blank">
+<img src="https://raw.githubusercontent.com/deta/community-content/main/Install-Button/dark.svg#gh-dark-mode-only" width="400" />
+</a>
+</div>
 
 ## 🛠 Configuration
 You can use **environment variables** to customize your instance.
