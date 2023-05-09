@@ -19,10 +19,18 @@ useHead({
         { rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#5bbad5' },
     ],
 })
+const { isMobileSafari } = useDevice()
 </script>
 
 <template>
-    <div relative h-100vh overflow-hidden>
+    <div
+        relative
+        overflow-hidden
+        h-100vh w-screen
+        :class="[
+            isMobileSafari && '!h-100dvh',
+        ]"
+    >
         <NuxtLayout>
             <NuxtPage h-full />
         </NuxtLayout>
@@ -39,4 +47,21 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+/** Dark mode scrollbar */
+    html.dark ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    html.dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+    }
+    html.dark ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.4);
+    }
+    html.dark ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
 </style>
