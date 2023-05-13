@@ -11,7 +11,7 @@ export function usePersona() {
         if (!personaList.value.length) {
             await createPersona({
                 id: nanoid(),
-                title: 'Golem',
+                title: 'AI Tutor',
                 instructions: 'You are Golem, a large language model based assistant. Answer as concisely as possible.',
             })
         }
