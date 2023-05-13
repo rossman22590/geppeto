@@ -1,4 +1,4 @@
-import type { ChatGPTError, ChatMessage } from 'chatgpt-web'
+import type { ChatMessage } from 'chatgpt-web'
 import { nanoid } from 'nanoid'
 import { Configuration, OpenAIApi } from 'openai'
 import pLimit from 'p-limit'
@@ -70,6 +70,36 @@ export const useConversations = () => {
         }
         await updateConversationList()
         return newConversation
+    }
+
+    async function cloneConversation(conversationId: string, lastMessageId?: string, titlePrefix?: string) {
+        const titlePrefixWithDefault = titlePrefix || 'Copy: '
+        const originConversation = await getConversationById(conversationId)
+        let messageList = []
+
+        if (lastMessageId) {
+            const lastMessage = await getMessageById(conversationId, lastMessageId)
+            messageList = getMessageChain(originConversation.messages, lastMessage)
+        }
+        else {
+            messageList = originConversation.messages
+        }
+
+        await createConversation(
+            '',
+            {
+                ...originConversation,
+                id: nanoid(),
+                title: [titlePrefixWithDefault, originConversation.title].join(''),
+                messages: messageList,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        )
+    }
+
+    async function forkConversation(id: string, lastMessageId: string) {
+        await cloneConversation(id, lastMessageId, 'Fork: ')
     }
 
     async function addMessageToConversation(id: string, message: ChatMessage) {
@@ -209,7 +239,6 @@ export const useConversations = () => {
     }
 
     const sendMessage = async (message: string) => {
-        // Creates the ChatGPT client
         if (!process.client) {
             return
         }
@@ -221,7 +250,6 @@ export const useConversations = () => {
 
         const assistantMessageList = (fromConversation.messages || []).filter((message: ChatMessage) => message.role === 'assistant')
         const lastAssistantMessage = assistantMessageList[assistantMessageList.length - 1]
-        console.log('lastAssistantMessage', lastAssistantMessage)
         const userMessage = {
             id: nanoid(),
             role: 'user' as const,
@@ -315,7 +343,7 @@ export const useConversations = () => {
         const { data: assistantMessage, error: messageError } = await handle(sendMessage({
             messages: messageList,
             model: fromConversation.settings?.model || modelUsed.value,
-            max_tokens: Number(maxTokens.value),
+            max_tokens: Number(fromConversation.settings?.maxTokens || maxTokens.value) > 0 ? Number(fromConversation.settings?.maxTokens || maxTokens.value) : undefined,
             temperature: resolveCreativity(fromConversation.settings?.creativity),
             async onProgress(partial: types.Message) {
                 await upsertAssistantMessage(partial)
@@ -325,18 +353,21 @@ export const useConversations = () => {
         }))
 
         if (messageError) {
-            const error = messageError as ChatGPTError
-            const errorCode = (error.cause as any)?.error.code as string
-            logger.error('Error sending message', error.cause, error)
+            const { cause } = (messageError as any)
+            const errorCode: string = cause.error.code || cause.error.type
+            logger.error('Error sending message', cause, cause.error)
             const errorHandlerMapping = {
                 async model_not_found() {
                     await addErrorMessage('The model you are using is not available. Please select another model in the settings.')
                 },
                 async context_length_exceeded() {
-                    await addErrorMessage('Your message is too long, please try again.')
+                    await addErrorMessage('Your message is too long or the amount of maximum tokens is too high, please try again with a shorter message or with less tokens as max.')
                 },
                 async invalid_api_key() {
                     await addErrorMessage('Your API key is invalid. Please check your API key in the settings.')
+                },
+                async insufficient_quota() {
+                    await addErrorMessage('Insufficient quota. If you\'re using a free plan, consider upgrading to a pay-as-you-use plan.')
                 },
             } as Record<string, () => Promise<void>>
 
@@ -347,7 +378,7 @@ export const useConversations = () => {
         else {
             assistantMessage.parentMessageId = userMessage.id
             setConversationTypingStatus(fromConversation.id, false)
-            await upsertAssistantMessage(assistantMessage, true)
+            await upsertAssistantMessage(assistantMessage as any, true)
             await updateConversationList()
 
             if (fromConversation.title.trim() === 'Untitled Conversation') {
@@ -464,11 +495,13 @@ export const useConversations = () => {
     return {
         clearConversations,
         clearErrorMessages,
+        cloneConversation,
         conversationList,
         createConversation,
         currentConversation,
         deleteConversation,
         followupQuestions,
+        forkConversation,
         getConversationById,
         isTyping,
         isTypingInCurrentConversation,

@@ -9,7 +9,7 @@ const { isOnSharePage } = useSession()
 const element = ref()
 const isActionBarVisible = ref(false)
 
-const { clearErrorMessages, removeMessageFromConversation, currentConversation, updateConversationMessage } = useConversations()
+const { clearErrorMessages, removeMessageFromConversation, currentConversation, updateConversationMessage, forkConversation } = useConversations()
 
 // Action bar visibility
 function onClick() {
@@ -51,6 +51,28 @@ function onFavoriteMessage() {
             favorite: !isMessageFavorited.value,
         },
     })
+}
+
+const showForkConversationConfirmation = ref(false)
+async function onForkConversationContent() {
+    if (!currentConversation.value) {
+        return
+    }
+    await forkConversation(currentConversation.value?.id, props.message.id)
+
+    showForkConversationConfirmation.value = true
+    setTimeout(() => {
+        showForkConversationConfirmation.value = false
+    }, 1250)
+}
+
+const showCopyMessageConfirmation = ref(false)
+function onCopyMessageContent() {
+    useClipboard().copy(props.message.text)
+    showCopyMessageConfirmation.value = true
+    setTimeout(() => {
+        showCopyMessageConfirmation.value = false
+    }, 1250)
 }
 </script>
 
@@ -177,13 +199,27 @@ function onFavoriteMessage() {
                             ml-3
                             @click="onFavoriteMessage"
                         />
-                        <GoLongPressButton
+
+                        <GoButton
                             ml-auto
+                            secondary
+                            :icon="`${showForkConversationConfirmation ? 'i-tabler-check' : 'i-tabler-arrow-fork'} !text-10px sm:!text-16px` "
+                            :success="showForkConversationConfirmation"
+                            mr-3
+                            @click="onForkConversationContent"
+                        />
+                        <GoButton
+                            secondary
+                            :icon="`${showCopyMessageConfirmation ? 'i-tabler-check' : 'i-tabler-copy'} !text-10px sm:!text-16px` "
+                            :success="showCopyMessageConfirmation"
+                            mr-3
+                            @click="onCopyMessageContent"
+                        />
+                        <GoLongPressButton
                             :duration="500"
                             progress-bar-style="bg-red/50"
                             success-style="!ring-red !scale-90 shadow-none"
                             icon="i-tabler-trash !text-10px sm:!text-16px"
-                            class="shadow-lg shadow-800/10"
                             gap-2px sm:gap-1
                             rounded-3 m-0 text-2 sm:text-14px
                             @success="removeMessage"
