@@ -97,7 +97,7 @@ function onCopyMessageContent() {
                             message.isError && 'text-red-9 dark:text-red-3',
                         ]"
                     >
-                        {{ message.role === 'assistant' ? 'Golem' : 'You' }}
+                        {{ message.role === 'assistant' ? 'AI Tutor' : 'You' }}
                     </div>
                     <div ml-auto>
                         <Transition name="appear-right">
